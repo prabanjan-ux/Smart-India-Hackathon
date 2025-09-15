@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/Signin.css";
-import { Link } from "react-router-dom";
 
 const Signin = () => {
+  const navigate = useNavigate(); // hook to redirect
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -25,8 +26,11 @@ const Signin = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Signin successful!");
-        console.log(data);
+        // Save user info if needed
+        localStorage.setItem("userName", data.name || "Student");
+
+        // Redirect to StudentDashboard
+        navigate("/studentdashboard");
       } else {
         alert(data.error || "Signin failed");
       }

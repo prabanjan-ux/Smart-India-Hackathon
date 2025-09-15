@@ -9,24 +9,21 @@ const MemoryMatch = ({ onComplete }) => {
   const [gameCompleted, setGameCompleted] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
 
-  // Environmental species for the memory game
-  const environmentalSpecies = [
-    { name: 'Tiger', image: '🐯' },
-    { name: 'Elephant', image: '🐘' },
-    { name: 'Panda', image: '🐼' },
-    { name: 'Turtle', image: '🐢' },
-    { name: 'Whale', image: '🐋' },
-    { name: 'Dolphin', image: '🐬' },
-    { name: 'Koala', image: '🐨' },
-    { name: 'Eagle', image: '🦅' },
+  const environmentalPairs = [
+    { name: 'Air Pollution', causeImage: '/images/factory.png', effectText: 'Air Pollution💨' },
+    { name: 'Deforestation', causeImage: '/images/deforestation.png', effectText: 'Deforestation🪵' },
+    { name: 'Water Pollution', causeImage: '/images/water_pollution.png', effectText: 'Water Pollution💧' },
+    { name: 'Recyclable Waste', causeImage: '/images/recyclable_waste.png', effectText: 'Recyclable Waste♻️' },
+    { name: 'Non-Recyclable Waste', causeImage: '/images/non_recyclable_waste.png', effectText: 'Non-Recyclable Waste' },
+    { name: 'Noise Pollution', causeImage: '/images/honking_cars.png', effectText: 'Noise Pollution🚗' },
+    { name: 'Renewable Energy', causeImage: '/images/solar_panels.png', effectText: 'Renewable Energy☀️' },
+    { name: 'E-Waste', causeImage: '/images/e_waste.png', effectText: 'E-Waste📱' },
   ];
 
-  // Initialize game
   useEffect(() => {
     initializeGame();
   }, []);
 
-  // Timer effect
   useEffect(() => {
     let timer;
     if (gameStarted && !gameCompleted) {
@@ -40,18 +37,23 @@ const MemoryMatch = ({ onComplete }) => {
   }, [gameStarted, gameCompleted]);
 
   const initializeGame = () => {
-    const cardPairs = [...environmentalSpecies].sort(() => Math.random() - 0.5).slice(0, 8);
-
-    // Duplicate each card to create pairs and shuffle
-    const gameCards = [...cardPairs, ...cardPairs]
-      .map((species, index) => ({
-        id: index,
-        name: species.name,
-        image: species.image,
+    const gameCards = environmentalPairs.flatMap((pair, index) => [
+      {
+        id: `cause-${index}`,
+        name: pair.name,
+        // CHANGED: Increased padding from p-2 to p-3 to make the image smaller inside the card.
+        content: <img src={pair.causeImage} alt={pair.name} className="w-full h-full object-fill p-1" />,
         flipped: false,
         matched: false,
-      }))
-      .sort(() => Math.random() - 0.5);
+      },
+      {
+        id: `effect-${index}`,
+        name: pair.name,
+        content: pair.effectText,
+        flipped: false,
+        matched: false,
+      },
+    ]).sort(() => Math.random() - 0.5);
 
     setCards(gameCards);
     setFlippedCards([]);
@@ -63,6 +65,7 @@ const MemoryMatch = ({ onComplete }) => {
   };
 
   const handleCardClick = (id) => {
+    // ... (rest of the logic is unchanged)
     if (!gameStarted) setGameStarted(true);
     if (gameCompleted || flippedCards.length >= 2) return;
 
@@ -85,7 +88,6 @@ const MemoryMatch = ({ onComplete }) => {
       const secondCard = updatedCards.find(card => card.id === secondId);
 
       if (firstCard && secondCard && firstCard.name === secondCard.name) {
-        // Match found
         setTimeout(() => {
           const matchedCards = updatedCards.map(card =>
             card.id === firstId || card.id === secondId
@@ -96,11 +98,10 @@ const MemoryMatch = ({ onComplete }) => {
           setFlippedCards([]);
           setMatchedPairs(prev => {
             const newMatchedPairs = prev + 1;
-            if (newMatchedPairs === environmentalSpecies.length) {
+            if (newMatchedPairs === environmentalPairs.length) {
               setGameCompleted(true);
 
-              // Calculate score
-              const maxMoves = environmentalSpecies.length * 3;
+              const maxMoves = environmentalPairs.length * 3;
               const moveScore = Math.max(0, 50 - Math.floor((moves / maxMoves) * 50));
               const maxTime = 120;
               const timeScore = Math.max(0, 50 - Math.floor((timeElapsed / maxTime) * 50));
@@ -111,7 +112,6 @@ const MemoryMatch = ({ onComplete }) => {
           });
         }, 500);
       } else {
-        // No match
         setTimeout(() => {
           const resetCards = updatedCards.map(card =>
             card.id === firstId || card.id === secondId
@@ -132,26 +132,34 @@ const MemoryMatch = ({ onComplete }) => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Endangered Species Memory Match</h2>
-      <p className="mb-4">Match pairs of endangered species to complete the game. Remember their positions to make matches faster!</p>
+    // CHANGED: Added max-w-lg and mx-auto to make the component container smaller and center it.
+    <div className="p-4 bg-white rounded-lg shadow-md max-w-lg mx-auto">
+      <h2 className="text-2xl font-bold mb-4">Environmental Cause & Effect Match</h2>
+      <p className="mb-4">Match environmental causes with their effects.</p>
 
       <div className="flex justify-between mb-4">
         <div><span className="font-bold">Moves:</span> {moves}</div>
-        <div><span className="font-bold">Matched:</span> {matchedPairs}/{environmentalSpecies.length}</div>
+        <div><span className="font-bold">Matched:</span> {matchedPairs}/{environmentalPairs.length}</div>
         <div><span className="font-bold">Time:</span> {formatTime(timeElapsed)}</div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      {/* CHANGED: Reduced gap between cards from gap-3 to gap-2. */}
+      <div className="grid grid-cols-4 gap-2 mb-4">
         {cards.map(card => (
           <div
             key={card.id}
-            className={`aspect-square flex items-center justify-center rounded-lg cursor-pointer text-4xl transition-all transform 
+            className={`aspect-square flex items-center justify-center rounded-lg cursor-pointer text-center transition-all transform
               ${card.flipped || card.matched ? 'rotate-0' : 'rotate-y-180'}
               ${card.matched ? 'bg-green-100' : card.flipped ? 'bg-blue-100' : 'bg-gray-300'}`}
             onClick={() => handleCardClick(card.id)}
           >
-            {(card.flipped || card.matched) ? card.image : '❓'}
+            {(card.flipped || card.matched) ? (
+              <div className="w-full h-full flex items-center justify-center text-sm font-semibold p-1">
+                {typeof card.content === 'string' ? <p>{card.content}</p> : card.content}
+              </div>
+            ) : (
+              <span className="text-3xl">❓</span>
+            )}
           </div>
         ))}
       </div>

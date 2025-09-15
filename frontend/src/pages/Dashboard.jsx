@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../styles/Dashboard.css"
 import Header from "../components/Header.jsx";
 import MetricCard from "../components/MetricCard.jsx";
@@ -6,6 +6,18 @@ import FactBox from "../components/FactBox.jsx";
 
 
 function App() {
+  const[data,setData]=useState({
+    temperature:null,
+    humidity:null,
+    aqi:null
+  });
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:5000/")
+    .then((res) => res.json())
+    .then((result) => setData(result))
+    .catch((err) =>console.log("Error fetching data: ",err))
+  },[]);
   return (
     <div className="app">
       <Header />
@@ -21,7 +33,7 @@ function App() {
           <MetricCard
             color="#4CAF50"
             icon="🌬️"
-            value="42"
+            value={data.aqi ?? "--"}
             unit="AQI"
             title="Air Quality Index"
             desc="Good air quality. Great for outdoor activities!"
@@ -29,7 +41,7 @@ function App() {
           <MetricCard
             color="#FF7043"
             icon="🌡️"
-            value="24°"
+            value={data.temperature !== null ? `${data.temperature}°` : "--"}
             unit="Celsius"
             title="Temperature"
             desc="Pleasant temperature with mild conditions."
@@ -37,7 +49,7 @@ function App() {
           <MetricCard
             color="#29B6F6"
             icon="💧"
-            value="65"
+            value={data.humidity ?? "--"}
             unit="%"
             title="Humidity Level"
             desc="Comfortable humidity levels for the season."
